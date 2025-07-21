@@ -1,7 +1,6 @@
 // Install barcode scanner library: npm install react-qr-barcode-scanner
 // This is a placeholder for barcode scanning logic
-import React, { useState } from 'react';
-import BarcodeScannerComponent from 'react-qr-barcode-scanner';
+import { useState } from 'react';
 
 interface BarcodeScannerModalProps {
   bootcamp: string;
@@ -12,20 +11,17 @@ interface BarcodeScannerModalProps {
 export function BarcodeScannerModal({ bootcamp, day, onClose }: BarcodeScannerModalProps) {
   const [barcodes, setBarcodes] = useState<string[]>([]);
   const [scanning, setScanning] = useState(true);
-  const [lastScanned, setLastScanned] = useState<string | null>(null);
 
   // Fix: Use result?.text for QR/barcode value, and only add if not duplicate
-  const handleDetected = (err: any, result: any) => {
+  const handleDetected = (_err: any, result: any) => {
     if (result?.text && scanning) {
       const code = result.text;
       if (!barcodes.includes(code)) {
         setBarcodes((prev) => [...prev, code]);
-        setLastScanned(code);
         // Prevent rapid duplicate scans
         setScanning(false);
         setTimeout(() => {
           setScanning(true);
-          setLastScanned(null);
         }, 1200);
       }
     }
@@ -53,11 +49,17 @@ export function BarcodeScannerModal({ bootcamp, day, onClose }: BarcodeScannerMo
         </h2>
         <div className="mb-4 w-full h-52 flex items-center justify-center bg-gray-800 rounded-xl border border-gray-700">
           {scanning ? (
-            <BarcodeScannerComponent
-              width={270}
-              height={170}
-              onUpdate={handleDetected}
-            />
+            <div className="text-center text-gray-400">
+              <div className="text-4xl mb-2">📷</div>
+              <p>Barcode Scanner Placeholder</p>
+              <p className="text-xs mt-1">Install react-qr-barcode-scanner to enable scanning</p>
+              <button 
+                className="mt-2 px-3 py-1 bg-blue-600 text-white text-xs rounded"
+                onClick={() => handleDetected(null, { text: `DEMO-${Date.now()}` })}
+              >
+                Simulate Scan
+              </button>
+            </div>
           ) : (
             <p className="text-gray-400">Scanning paused</p>
           )}
