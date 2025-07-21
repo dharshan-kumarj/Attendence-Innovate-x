@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { BootcampCard, DaySelector } from './components/ui/BootcampFlow';
-import { BarcodeScannerModal } from './components/ui/BarcodeScannerModal';
+import { TeamAttendanceModal } from './components/ui/TeamAttendanceModal';
 
 const bootcamps = [
 	{ title: 'AI/ML Bootcamp', color: 'bg-indigo-900 shadow-xl' },
@@ -12,7 +12,7 @@ const bootcamps = [
 export default function MobileBootcamp() {
 	const [selectedBootcamp, setSelectedBootcamp] = useState<string | null>(null);
 	const [selectedDay, setSelectedDay] = useState<number | null>(null);
-	const [scannerOpen, setScannerOpen] = useState(false);
+	const [attendanceModalOpen, setAttendanceModalOpen] = useState(false);
 
 	return (
 		<div className="min-h-screen bg-gradient-to-tr from-gray-950 via-gray-900 to-gray-800 flex flex-col items-center justify-center p-4">
@@ -26,7 +26,6 @@ export default function MobileBootcamp() {
 						title={camp.title}
 						color={camp.color}
 						onClick={() => setSelectedBootcamp(camp.title)}
-						className="rounded-2xl p-7 text-gray-100 font-bold text-xl transition-transform transform hover:scale-105 hover:shadow-2xl border-2 border-gray-700/40"
 					/>
 				))}
 			</div>
@@ -35,22 +34,20 @@ export default function MobileBootcamp() {
 		  bootcamp={selectedBootcamp}
 		  onSelectDay={(day: number) => {
 			setSelectedDay(day);
-			setScannerOpen(true);
+			setAttendanceModalOpen(true);
 		  }}
 		  onClose={() => setSelectedBootcamp(null)}
-		  className="mt-8 bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-700"
 		/>
 	  )}
-			{scannerOpen && selectedBootcamp && selectedDay && (
-				<BarcodeScannerModal
+			{attendanceModalOpen && selectedBootcamp && selectedDay && (
+				<TeamAttendanceModal
 					bootcamp={selectedBootcamp}
 					day={selectedDay}
 					onClose={() => {
-						setScannerOpen(false);
+						setAttendanceModalOpen(false);
 						setSelectedBootcamp(null);
 						setSelectedDay(null);
 					}}
-					className="mt-8 bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-700"
 				/>
 			)}
 		</div>

@@ -1,4 +1,3 @@
-import React from "react";
 import MobileBootcamp from './MobileBootcamp';
 
 function App() {

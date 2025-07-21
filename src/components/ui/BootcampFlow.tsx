@@ -1,15 +1,16 @@
-import React from 'react';
+
 
 interface BootcampCardProps {
   title: string;
   color: string;
   onClick: () => void;
+  className?: string;
 }
 
-export function BootcampCard({ title, color, onClick }: BootcampCardProps) {
+export function BootcampCard({ title, color, onClick, className }: BootcampCardProps) {
   return (
     <button
-      className={`rounded-xl shadow-xl p-7 text-gray-100 font-bold text-xl transition-transform transform hover:scale-105 hover:shadow-2xl border-2 border-gray-700/40 ${color}`}
+      className={`rounded-xl shadow-xl p-7 text-gray-100 font-bold text-xl transition-transform transform hover:scale-105 hover:shadow-2xl border-2 border-gray-700/40 ${color} ${className || ''}`}
       onClick={onClick}
     >
       {title}
@@ -21,6 +22,7 @@ interface DaySelectorProps {
   onSelectDay: (day: number) => void;
   onClose: () => void;
   bootcamp?: string;
+  className?: string;
 }
 
 export function DaySelector({ onSelectDay, onClose, bootcamp }: DaySelectorProps) {
