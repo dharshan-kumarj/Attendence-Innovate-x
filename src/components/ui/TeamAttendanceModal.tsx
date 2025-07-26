@@ -22,6 +22,39 @@ export function TeamAttendanceModal({ bootcamp, day, onClose }: TeamAttendanceMo
   const [attendance, setAttendance] = useState<AttendanceState>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter teams based on search query
+  const filteredTeams = teams.filter(team => {
+    const query = searchQuery.toLowerCase();
+    return (
+      team.team_name.toLowerCase().includes(query) ||
+      team.team_leader.toLowerCase().includes(query) ||
+      team.team_member1.toLowerCase().includes(query) ||
+      team.team_member2.toLowerCase().includes(query) ||
+      team.reg_leader.toLowerCase().includes(query) ||
+      team.reg_member1.toLowerCase().includes(query) ||
+      team.reg_member2.toLowerCase().includes(query)
+    );
+  });
+
+  // Function to highlight matching text
+  const highlightText = (text: string, query: string) => {
+    if (!query.trim()) return text;
+    
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const parts = text.split(regex);
+    
+    return parts.map((part, index) => 
+      regex.test(part) ? (
+        <span key={index} className="bg-yellow-500 bg-opacity-30 text-yellow-300 font-semibold">
+          {part}
+        </span>
+      ) : (
+        part
+      )
+    );
+  };
 
   useEffect(() => {
     loadTeams();
@@ -191,17 +224,96 @@ export function TeamAttendanceModal({ bootcamp, day, onClose }: TeamAttendanceMo
           </p>
         </div>
 
+        {/* Search Bar */}
+        <div className="px-6 py-4 border-b border-gray-700">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search teams, names, or registration numbers..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  setSearchQuery('');
+                }
+              }}
+              className="w-full px-4 py-3 pl-10 pr-10 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-200 transition-colors"
+                title="Clear search (Esc)"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+          {searchQuery && (
+            <div className="flex justify-between items-center mt-2">
+              <p className="text-sm text-gray-400">
+                Showing {filteredTeams.length} of {teams.length} teams
+              </p>
+              {filteredTeams.length > 0 && (
+                <button
+                  onClick={() => {
+                    // Select all filtered teams
+                    const filteredAttendance = { ...attendance };
+                    filteredTeams.forEach(team => {
+                      if (team.reg_leader && team.reg_leader !== "Not specified") {
+                        filteredAttendance[team.reg_leader].checked = true;
+                      }
+                      if (team.reg_member1 && team.reg_member1 !== "Not specified") {
+                        filteredAttendance[team.reg_member1].checked = true;
+                      }
+                      if (team.reg_member2 && team.reg_member2 !== "Not specified") {
+                        filteredAttendance[team.reg_member2].checked = true;
+                      }
+                    });
+                    setAttendance(filteredAttendance);
+                  }}
+                  className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition-colors"
+                >
+                  Select All Visible
+                </button>
+              )}
+            </div>
+          )}
+          {searchQuery && filteredTeams.length === 0 && (
+            <div className="mt-2 text-sm text-gray-400">
+              <p>💡 Search tips:</p>
+              <ul className="text-xs mt-1 space-y-1 ml-4">
+                <li>• Try partial team names (e.g., "AI", "Cyber")</li>
+                <li>• Search by student names or registration numbers</li>
+                <li>• Use shorter keywords for better results</li>
+              </ul>
+            </div>
+          )}
+        </div>
+
         {/* Teams List */}
         <div className="flex-1 overflow-y-auto p-6">
-          {teams.length === 0 ? (
+          {filteredTeams.length === 0 ? (
             <div className="text-center text-gray-400 py-8">
-              <p>No teams found for this category.</p>
+              <p>{searchQuery ? 'No teams found matching your search.' : 'No teams found for this category.'}</p>
+              {searchQuery && (
+                <p className="text-sm mt-2">Try searching for team names, member names, or registration numbers.</p>
+              )}
             </div>
           ) : (
             <div className="space-y-6">
-              {teams.map((team, teamIndex) => (
+              {filteredTeams.map((team, teamIndex) => (
                 <div key={teamIndex} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                  <h3 className="text-lg font-semibold text-blue-400 mb-3">{team.team_name}</h3>
+                  <h3 className="text-lg font-semibold text-blue-400 mb-3">
+                    {highlightText(team.team_name, searchQuery)}
+                  </h3>
                   <div className="space-y-2">
                     {/* Team Leader */}
                     {team.reg_leader && team.reg_leader !== "Not specified" && (
@@ -214,8 +326,8 @@ export function TeamAttendanceModal({ bootcamp, day, onClose }: TeamAttendanceMo
                         />
                         <div className="flex-1">
                           <span className="text-green-400 text-sm font-medium">Team Leader:</span>
-                          <div className="text-gray-200">{team.team_leader}</div>
-                          <div className="text-gray-400 text-sm">Reg: {team.reg_leader}</div>
+                          <div className="text-gray-200">{highlightText(team.team_leader, searchQuery)}</div>
+                          <div className="text-gray-400 text-sm">Reg: {highlightText(team.reg_leader, searchQuery)}</div>
                         </div>
                       </label>
                     )}
@@ -231,8 +343,8 @@ export function TeamAttendanceModal({ bootcamp, day, onClose }: TeamAttendanceMo
                         />
                         <div className="flex-1">
                           <span className="text-yellow-400 text-sm font-medium">Member 1:</span>
-                          <div className="text-gray-200">{team.team_member1}</div>
-                          <div className="text-gray-400 text-sm">Reg: {team.reg_member1}</div>
+                          <div className="text-gray-200">{highlightText(team.team_member1, searchQuery)}</div>
+                          <div className="text-gray-400 text-sm">Reg: {highlightText(team.reg_member1, searchQuery)}</div>
                         </div>
                       </label>
                     )}
@@ -248,8 +360,8 @@ export function TeamAttendanceModal({ bootcamp, day, onClose }: TeamAttendanceMo
                         />
                         <div className="flex-1">
                           <span className="text-purple-400 text-sm font-medium">Member 2:</span>
-                          <div className="text-gray-200">{team.team_member2}</div>
-                          <div className="text-gray-400 text-sm">Reg: {team.reg_member2}</div>
+                          <div className="text-gray-200">{highlightText(team.team_member2, searchQuery)}</div>
+                          <div className="text-gray-400 text-sm">Reg: {highlightText(team.reg_member2, searchQuery)}</div>
                         </div>
                       </label>
                     )}
