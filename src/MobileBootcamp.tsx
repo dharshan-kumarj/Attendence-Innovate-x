@@ -1,18 +1,21 @@
 import { useState } from 'react';
 import { BootcampCard, DaySelector } from './components/ui/BootcampFlow';
 import { TeamAttendanceModal } from './components/ui/TeamAttendanceModal';
+import { AttendanceDashboard } from './components/ui/AttendanceDashboard';
 
 const bootcamps = [
 	{ title: 'AI/ML Bootcamp', color: 'bg-indigo-900 shadow-xl' },
 	{ title: 'Cyber Bootcamp', color: 'bg-cyan-900 shadow-xl' },
 	{ title: 'Full-Stack Bootcamp', color: 'bg-green-900 shadow-xl' },
 	{ title: 'Innovate-X Hackathon', color: 'bg-red-900 shadow-xl' },
+	{ title: 'Attendance Admin Dashboard', color: 'bg-purple-900 shadow-xl', isAdmin: true },
 ];
 
 export default function MobileBootcamp() {
 	const [selectedBootcamp, setSelectedBootcamp] = useState<string | null>(null);
 	const [selectedDay, setSelectedDay] = useState<number | null>(null);
 	const [attendanceModalOpen, setAttendanceModalOpen] = useState(false);
+	const [dashboardOpen, setDashboardOpen] = useState(false);
 
 	return (
 		<div className="min-h-screen bg-gradient-to-tr from-gray-950 via-gray-900 to-gray-800 flex flex-col items-center justify-center p-4">
@@ -25,7 +28,13 @@ export default function MobileBootcamp() {
 						key={camp.title}
 						title={camp.title}
 						color={camp.color}
-						onClick={() => setSelectedBootcamp(camp.title)}
+						onClick={() => {
+							if (camp.isAdmin) {
+								setDashboardOpen(true);
+							} else {
+								setSelectedBootcamp(camp.title);
+							}
+						}}
 					/>
 				))}
 			</div>
@@ -48,6 +57,12 @@ export default function MobileBootcamp() {
 						setSelectedBootcamp(null);
 						setSelectedDay(null);
 					}}
+				/>
+			)}
+
+			{dashboardOpen && (
+				<AttendanceDashboard
+					onClose={() => setDashboardOpen(false)}
 				/>
 			)}
 		</div>
